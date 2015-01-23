@@ -5,3 +5,4 @@ public interface OnReady {
 	public void ready();
 
 }
+ 

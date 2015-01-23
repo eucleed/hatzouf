@@ -1,6 +1,7 @@
 package org.castafiore.iot.client;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.castafiore.iot.definitions.DeviceDefinition;
@@ -132,6 +133,12 @@ public class Device implements OnConnectedListener {
 		websocket.sendRequest(request, e);
 
 	}
+	
+	public void propagateEvent(String event) {
+		propagateEvent(event, new HashMap<String, String>());
+
+	}
+
 
 	public Device registerFunction(String name, String description) {
 		FunctionDefinition function = new FunctionDefinition();

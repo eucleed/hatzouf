@@ -1,4 +1,4 @@
-package org.castafiore.iot.driver;
+package org.castafiore.iot.sample;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -11,23 +11,23 @@ import javax.swing.JFrame;
 
 import org.castafiore.iot.client.Device;
 import org.castafiore.iot.client.OnReady;
+import org.castafiore.iot.driver.JavaWebsocketLayer;
 
-public class SwitchRemoteControl extends Device {
+public class RemoteControl extends Device {
 
-	public SwitchRemoteControl() {
-		super("SwitchRC",
-				"SwitchRC", "Remote control", "");
+	public RemoteControl() { 
+		super("SwitchRC", "SwitchRC", "Remote control", "");
 
-		registerEvent("OnSwitchOn", "Event published when switched on");
-		registerEvent("OnSwitchOff", "Published when switched off");
+		registerEvent("OnSwitchOn", "Switch on");
+		registerEvent("OnSwitchOff", "Switch off");
 	}
 
 	public void switchOn() {
-		propagateEvent("OnSwitchOn", new HashMap<String, String>());
+		propagateEvent("OnSwitchOn");
 	}
 
 	public void switchOff() {
-		propagateEvent("OnSwitchOff", new HashMap<String, String>());
+		propagateEvent("OnSwitchOff");
 	}
 
 	/**
@@ -35,13 +35,19 @@ public class SwitchRemoteControl extends Device {
 	 */
 	public static void main(String[] args) {
 
-		final SwitchRemoteControl device = new SwitchRemoteControl();
-		device.onReady(new OnReady() {
+		//create an instance of the device
+		final Device remotecontrol = new Device("Remote", "Remote", "Remote control", "img/remote.png");
+		//register the 2 events
+		remotecontrol.registerEvent("OnSwitchOn", "Switch on");
+		remotecontrol.registerEvent("OnSwitchOff", "Switch off");
+		
+		
+		remotecontrol.onReady(new OnReady() {
 
 			@Override
 			public void ready() {
 
-				String title = "Switch....";
+				String title = "Remote control";
 				JFrame frame = new JFrame(title);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				JButton switchon = new JButton("Switch on");
@@ -49,8 +55,7 @@ public class SwitchRemoteControl extends Device {
 					
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						// TODO Auto-generated method stub
-						device.switchOn();
+						remotecontrol.propagateEvent("OnSwitchOn");
 					}
 				});
 				
@@ -59,26 +64,24 @@ public class SwitchRemoteControl extends Device {
 					
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						device.switchOff();
+						remotecontrol.propagateEvent("OnSwitchOff");
 					}
 				});
 				
 				Container contentPane = frame.getContentPane();
 				contentPane.add(switchon, BorderLayout.NORTH);
-				contentPane.add(switchoff, BorderLayout.CENTER);
+				contentPane.add(switchoff, BorderLayout.SOUTH);
 
-				frame.setSize(300, 125);
+				frame.setSize(150, 100);
 				frame.setVisible(true);
 
 			}
 		});
-		device.setWebsocketLayer(new JavaWebsocketLayer(device));
-		device.connect("ws://localhost:8080/iot/websockets/iot");
-		try {
-			Thread.sleep(30000);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		//set WebsocketLayer implementation
+		remotecontrol.setWebsocketLayer(new JavaWebsocketLayer(remotecontrol));
+		//connect to server
+		remotecontrol.connect("ws://72.13.93.222:8080/hatzouf/websockets/iot");
+		
 
 	}
 
