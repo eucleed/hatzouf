@@ -44,7 +44,7 @@
 
 <p>At least JDK 1.7 is required.</p>
 
-<p>Download hatzouf server <a href="http://www.google.com">Hatzouf</a></p>
+<p>Download hatzouf server <a href="http://72.13.93.222/hatzouf-0.0.1.zip">Hatzouf</a></p>
 
 <p>run </p>
 
@@ -89,7 +89,7 @@
 
 <pre><code>public static void main(String[] args) {
         //1. Create an instance of device
-        final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"lamp.png");
+        final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"img/lamp.png");
 
         //2. Register the 2 functions
         lamp.registerFunction("SwitchOn", "Function exposed to server");
@@ -109,12 +109,15 @@
 
             @Override
             public void execute(String name, Map&lt;String, String&gt; input) {
-                if(name.equals("SwitchOn")){
-                    System.out.println("Switched  on");
-                    state.setText("Switched on");
-                }else{
-                    System.out.println("Switched off");
-                    state.setText("Switched off");
+                try{
+
+                    if(name.equals("SwitchOn")){
+                        state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-on.png")));
+                    }else{
+                        state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-off.png")));
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
                 }
 
             }
@@ -125,16 +128,16 @@
 
             @Override
             public void ready() {
-                JFrame frame = new JFrame("My switch");
+                JFrame frame = new JFrame("Lamp");
                 frame.getContentPane().add(state, BorderLayout.NORTH);
-                frame.setSize(200, 200);
+                frame.setSize(300, 275);
                 frame.setVisible(true);
 
             }
         });
 
         //6. connect the device to the hatzouf server
-        lamp.connect("ws://localhost:8080/iot/websockets/iot");
+        lamp.connect("ws://localhost:8080/hatzouf/websockets/iot");
 
     }
 </code></pre>
@@ -149,7 +152,7 @@
 <pre><code>public static void main(String[] args) {
 
         //create an instance of the device
-        final Device remotecontrol = new Device("SwitchRC", "SwitchRC", "Remote control", "remote.png");
+        final Device remotecontrol = new Device("Remote", "Remote", "Remote control", "img/remote.png");
         //register the 2 events
         remotecontrol.registerEvent("OnSwitchOn", "Switch on");
         remotecontrol.registerEvent("OnSwitchOff", "Switch off");
@@ -183,9 +186,9 @@
 
                 Container contentPane = frame.getContentPane();
                 contentPane.add(switchon, BorderLayout.NORTH);
-                contentPane.add(switchoff, BorderLayout.CENTER);
+                contentPane.add(switchoff, BorderLayout.SOUTH);
 
-                frame.setSize(300, 125);
+                frame.setSize(150, 100);
                 frame.setVisible(true);
 
             }
@@ -193,7 +196,7 @@
         //set WebsocketLayer implementation
         remotecontrol.setWebsocketLayer(new JavaWebsocketLayer(remotecontrol));
         //connect to server
-        remotecontrol.connect("ws://localhost:8080/iot/websockets/iot");
+        remotecontrol.connect("ws://localhost:8080/hatzouf/websockets/iot");
 
 
     }
@@ -206,7 +209,7 @@
 
 <p>To check if the devices are working properly:</p>
 
-<p>go to <a href="http://localhost:8080/iot">http://localhost:8080/iot</a></p>
+<p>go to <a href="http://localhost:8080/hatzouf">http://localhost:8080/hatzouf</a></p>
 
 <p>Click refresh.</p>
 
@@ -228,14 +231,14 @@
     public RemoteControlApplet(){
         //add the required devices to be used
         addRequiredDeviceName("Lamp");
-        addRequiredDeviceName("SwitchRC");
+        addRequiredDeviceName("Remote");
 
     }
 
     @Override
     public void initDevice(Device device) {
         //when device is first initialised, we add the listener for the 2 events on the remote control
-        if(device.getName().equals("SwitchRC")){
+        if(device.getName().equals("Remote")){
             device.addEvent(new OnSwitchOn(), "OnSwitchOn");
             device.addEvent(new OnSwitchOff(), "OnSwitchOff");
         }
