@@ -48,11 +48,13 @@
 
 <p>run </p>
 
-<p>bin/startup.sh on linux </p>
+<pre><code>bin/startup.sh on linux 
+</code></pre>
 
 <p>or</p>
 
-<p>bin/startup.bat on windows</p>
+<pre><code>bin/startup.bat on windows
+</code></pre>
 
 <p>Check if server is running http://localhost:8080/hatzouf</p>
 
@@ -87,220 +89,227 @@
 
 <p>The lamp need to be able to receive 2 events. i.e. SwitchOn and SwitchOff</p>
 
-<pre><code>public static void main(String[] args) {
-        //1. Create an instance of device
-        final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"img/lamp.png");
+<h5>
+<a id="1-create-an-instance-of-device" class="anchor" href="#1-create-an-instance-of-device" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Create an instance of device</h5>
 
-        //2. Register the 2 functions
-        lamp.registerFunction("SwitchOn", "Function exposed to server");
+<pre><code>final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"img/lamp.png");
+</code></pre>
+
+<h5>
+<a id="2-register-the-2-functions" class="anchor" href="#2-register-the-2-functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Register the 2 functions</h5>
+
+<pre><code>        lamp.registerFunction("SwitchOn", "Function exposed to server");
         lamp.registerFunction("SwitchOff", "Function exposed to server for switching off the device");
+</code></pre>
 
-        //3. Set the type of communication layer. In this case it is a java implementation of websocket.
-        //Depending the environment the driver is running, other implementation of the websocket layer can be injected
-        lamp.setWebsocketLayer(new JavaWebsocketLayer(lamp));
+<pre><code>    //3. Set the type of communication layer. In this case it is a java implementation of websocket.
+    //Depending the environment the driver is running, other implementation of the websocket layer can be injected
+    lamp.setWebsocketLayer(new JavaWebsocketLayer(lamp));
 
-        //a simple text label to display if lamp is on or off.
-        //in a real lamp, instead displaying a label, the microcontroller will send an electric signal to a switch
-        final JLabel state = new JLabel();
+    //a simple text label to display if lamp is on or off.
+    //in a real lamp, instead displaying a label, the microcontroller will send an electric signal to a switch
+    final JLabel state = new JLabel();
 
-        //4. Add function handlers to execute the captured events
-        //this implementation of the handler simply diplays Switched on or Switched off
-        lamp.addFunctionHandler(new FunctionHandler() {
+    //4. Add function handlers to execute the captured events
+    //this implementation of the handler simply diplays Switched on or Switched off
+    lamp.addFunctionHandler(new FunctionHandler() {
 
-            @Override
-            public void execute(String name, Map&lt;String, String&gt; input) {
-                try{
+        @Override
+        public void execute(String name, Map&lt;String, String&gt; input) {
+            try{
 
-                    if(name.equals("SwitchOn")){
-                        state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-on.png")));
-                    }else{
-                        state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-off.png")));
-                    }
-                }catch(Exception e){
-                    e.printStackTrace();
+                if(name.equals("SwitchOn")){
+                    state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-on.png")));
+                }else{
+                    state.setIcon(new ImageIcon(new URL("http://localhost:8080/hatzouf/img/light-off.png")));
                 }
-
+            }catch(Exception e){
+                e.printStackTrace();
             }
-        });
 
-        //5. This handler is executed when the device is connected and ready for use.
-        lamp.onReady(new OnReady() {
+        }
+    });
 
-            @Override
-            public void ready() {
-                JFrame frame = new JFrame("Lamp");
-                frame.getContentPane().add(state, BorderLayout.NORTH);
-                frame.setSize(300, 275);
-                frame.setVisible(true);
+    //5. This handler is executed when the device is connected and ready for use.
+    lamp.onReady(new OnReady() {
 
-            }
-        });
+        @Override
+        public void ready() {
+            JFrame frame = new JFrame("Lamp");
+            frame.getContentPane().add(state, BorderLayout.NORTH);
+            frame.setSize(300, 275);
+            frame.setVisible(true);
 
-        //6. connect the device to the hatzouf server
-        lamp.connect("ws://localhost:8080/hatzouf/websockets/iot");
+        }
+    });
 
-    }
+    //6. connect the device to the hatzouf server
+    lamp.connect("ws://localhost:8080/hatzouf/websockets/iot");
+
+}
 </code></pre>
 
-<h4>
-<a id="2--the-remote-control" class="anchor" href="#2--the-remote-control" aria-hidden="true"><span class="octicon octicon-link"></span></a>2.  The remote control.</h4>
+<pre><code>
+####2.  The remote control.
+The remote control need to publish 2 events i.e OnSwitchOn and OnSwitchOff
 
-<p>The remote control need to publish 2 events i.e OnSwitchOn and OnSwitchOff</p>
-
-<p>Here is the code for creating the remote control.</p>
-
-<pre><code>public static void main(String[] args) {
-
-        //create an instance of the device
-        final Device remotecontrol = new Device("Remote", "Remote", "Remote control", "img/remote.png");
-        //register the 2 events
-        remotecontrol.registerEvent("OnSwitchOn", "Switch on");
-        remotecontrol.registerEvent("OnSwitchOff", "Switch off");
-
-
-        remotecontrol.onReady(new OnReady() {
-
-            @Override
-            public void ready() {
-
-                String title = "Remote control";
-                JFrame frame = new JFrame(title);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                JButton switchon = new JButton("Switch on");
-                switchon.addActionListener(new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        remotecontrol.propagateEvent("OnSwitchOn");
-                    }
-                });
-
-                JButton switchoff = new JButton("Switch off");
-                switchoff.addActionListener(new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        remotecontrol.propagateEvent("OnSwitchOff");
-                    }
-                });
-
-                Container contentPane = frame.getContentPane();
-                contentPane.add(switchon, BorderLayout.NORTH);
-                contentPane.add(switchoff, BorderLayout.SOUTH);
-
-                frame.setSize(150, 100);
-                frame.setVisible(true);
-
-            }
-        });
-        //set WebsocketLayer implementation
-        remotecontrol.setWebsocketLayer(new JavaWebsocketLayer(remotecontrol));
-        //connect to server
-        remotecontrol.connect("ws://localhost:8080/hatzouf/websockets/iot");
-
-
-    }
+Here is the code for creating the remote control.
 </code></pre>
 
-<h4>
-<a id="3-the-server" class="anchor" href="#3-the-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. The server</h4>
+<p>public static void main(String[] args) {</p>
 
-<p>Up to now, we have created our devices and connected them to the server.</p>
+<pre><code>    //create an instance of the device
+    final Device remotecontrol = new Device("Remote", "Remote", "Remote control", "img/remote.png");
+    //register the 2 events
+    remotecontrol.registerEvent("OnSwitchOn", "Switch on");
+    remotecontrol.registerEvent("OnSwitchOff", "Switch off");
 
-<p>To check if the devices are working properly:</p>
 
-<p>go to <a href="http://localhost:8080/hatzouf">http://localhost:8080/hatzouf</a></p>
+    remotecontrol.onReady(new OnReady() {
 
-<p>Click refresh.</p>
+        @Override
+        public void ready() {
 
-<p>You should see the devices and their status.</p>
+            String title = "Remote control";
+            JFrame frame = new JFrame(title);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            JButton switchon = new JButton("Switch on");
+            switchon.addActionListener(new ActionListener() {
 
-<p>We need to create an iot application which will do the following</p>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    remotecontrol.propagateEvent("OnSwitchOn");
+                }
+            });
 
-<ol>
-<li><p>Capture the OnSwitchOn event from the remote control and execute the SwichOn function in the lamp.</p></li>
-<li><p>Capture the OnSwitchOff event.....</p></li>
-</ol>
+            JButton switchoff = new JButton("Switch off");
+            switchoff.addActionListener(new ActionListener() {
 
-<p>Good news an IOTApplet is in fact a spring managed bean.</p>
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    remotecontrol.propagateEvent("OnSwitchOff");
+                }
+            });
 
-<p>The code below is the implementation of the IOTApplet</p>
+            Container contentPane = frame.getContentPane();
+            contentPane.add(switchon, BorderLayout.NORTH);
+            contentPane.add(switchoff, BorderLayout.SOUTH);
 
-<pre><code>public class RemoteControlApplet extends GenericIOTApplet {
+            frame.setSize(150, 100);
+            frame.setVisible(true);
 
-    public RemoteControlApplet(){
-        //add the required devices to be used
-        addRequiredDeviceName("Lamp");
-        addRequiredDeviceName("Remote");
+        }
+    });
+    //set WebsocketLayer implementation
+    remotecontrol.setWebsocketLayer(new JavaWebsocketLayer(remotecontrol));
+    //connect to server
+    remotecontrol.connect("ws://localhost:8080/hatzouf/websockets/iot");
 
+
+}
+</code></pre>
+
+<pre><code>
+
+#### 3. The server
+Up to now, we have created our devices and connected them to the server.
+
+To check if the devices are working properly:
+
+go to [http://localhost:8080/hatzouf](http://localhost:8080/hatzouf)
+
+Click refresh.
+
+You should see the devices and their status.
+
+We need to create an iot application which will do the following
+
+1. Capture the OnSwitchOn event from the remote control and execute the SwichOn function in the lamp.
+
+2. Capture the OnSwitchOff event.....
+
+Good news an IOTApplet is in fact a spring managed bean.
+
+The code below is the implementation of the IOTApplet
+
+</code></pre>
+
+<p>public class RemoteControlApplet extends GenericIOTApplet {</p>
+
+<pre><code>public RemoteControlApplet(){
+    //add the required devices to be used
+    addRequiredDeviceName("Lamp");
+    addRequiredDeviceName("Remote");
+
+}
+
+@Override
+public void initDevice(Device device) {
+    //when device is first initialised, we add the listener for the 2 events on the remote control
+    if(device.getName().equals("Remote")){
+        device.addEvent(new OnSwitchOn(), "OnSwitchOn");
+        device.addEvent(new OnSwitchOff(), "OnSwitchOff");
     }
+
+}
+
+
+/**
+ * Implementation of the OnSwitchOn listener
+ *
+ */
+class OnSwitchOn implements EventListener{
 
     @Override
-    public void initDevice(Device device) {
-        //when device is first initialised, we add the listener for the 2 events on the remote control
-        if(device.getName().equals("Remote")){
-            device.addEvent(new OnSwitchOn(), "OnSwitchOn");
-            device.addEvent(new OnSwitchOff(), "OnSwitchOff");
-        }
+    public void execute(Device source, String type,
+            Map&lt;String, String&gt; parameters) {
+        //finds the device and invoke the SwitchOn function
+        findDeviceByName("Lamp").invoke("SwitchOn");
 
     }
 
+}
 
-    /**
-     * Implementation of the OnSwitchOn listener
-     *
-     */
-    class OnSwitchOn implements EventListener{
+class OnSwitchOff implements EventListener{
 
-        @Override
-        public void execute(Device source, String type,
-                Map&lt;String, String&gt; parameters) {
-            //finds the device and invoke the SwitchOn function
-            findDeviceByName("Lamp").invoke("SwitchOn");
+    @Override
+    public void execute(Device source, String type, Map&lt;String, String&gt; parameters) {
 
-        }
-
-    }
-
-    class OnSwitchOff implements EventListener{
-
-        @Override
-        public void execute(Device source, String type, Map&lt;String, String&gt; parameters) {
-
-            //finds the Lamp device and invokes the SwitchOff event
-            findDeviceByName("Lamp").invoke("SwitchOff");
-
-        }
+        //finds the Lamp device and invokes the SwitchOff event
+        findDeviceByName("Lamp").invoke("SwitchOff");
 
     }
 
 }
 </code></pre>
 
-<h4>
-<a id="configure-the-server-to-run-the-iotapplet" class="anchor" href="#configure-the-server-to-run-the-iotapplet" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configure the server to run the IOTApplet</h4>
+<p>}</p>
 
-<p>Simply create a spring application context file with the following convention</p>
+<pre><code>
+#### Configure the server to run the IOTApplet
 
-<ol>
-<li><p>The file name should be xxx-config.xml, where xxx could by anything</p></li>
-<li><p>The file should be in folder WEB-INF/configs in the iot directory.</p></li>
-</ol>
+Simply create a spring application context file with the following convention
 
-<pre><code>&lt;bean class="org.castafiore.iot.RemoteControlApplet"&gt;
-   &lt;property name="registry" ref="deviceRegistry"&gt;&lt;/property&gt;
-&lt;/bean&gt;
+1.  The file name should be xxx-config.xml, where xxx could by anything
+
+2.  The file should be in folder WEB-INF/configs in the iot directory.
+
 </code></pre>
 
-<ol>
-<li>Restart the server.</li>
-</ol>
+<p>
+   
+</p>
 
-<p>The remote controlled switch is ready for use.</p>
+<pre><code>
+3. Restart the server.
 
-<p>start the 2 devices.</p>
 
-<p>click on the switch on and switch off button and see if it reacts on the lamp device.</p>
+The remote controlled switch is ready for use.
+
+start the 2 devices.
+
+click on the switch on and switch off button and see if it reacts on the lamp device.
+</code></pre>
       </section>
     </div>
 
