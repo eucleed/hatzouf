@@ -90,20 +90,20 @@
 <p>The lamp need to be able to receive 2 events. i.e. SwitchOn and SwitchOff</p>
 
 <h5>
-<a id="a-create-an-instance-of-device" class="anchor" href="#a-create-an-instance-of-device" aria-hidden="true"><span class="octicon octicon-link"></span></a>a. Create an instance of device</h5>
+<a id="create-an-instance-of-device" class="anchor" href="#create-an-instance-of-device" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create an instance of device</h5>
 
 <pre><code>final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"img/lamp.png");
 </code></pre>
 
 <h5>
-<a id="b-register-the-2-functions" class="anchor" href="#b-register-the-2-functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>b. Register the 2 functions</h5>
+<a id="register-the-2-functions" class="anchor" href="#register-the-2-functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Register the 2 functions</h5>
 
 <pre><code> lamp.registerFunction("SwitchOn", "Function exposed to server");
- lamp.registerFunction("SwitchOff", "Function exposed to server for switching off the device");
+ lamp.registerFunction("SwitchOff", "Function exposed to server");
 </code></pre>
 
 <h5>
-<a id="c-set-the-type-of-communication-layer" class="anchor" href="#c-set-the-type-of-communication-layer" aria-hidden="true"><span class="octicon octicon-link"></span></a>c. Set the type of communication layer.</h5>
+<a id="set-the-type-of-communication-layer" class="anchor" href="#set-the-type-of-communication-layer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Set the type of communication layer.</h5>
 
 <p>In this case it is a java implementation of websocket.</p>
 
@@ -113,7 +113,7 @@
 </code></pre>
 
 <h5>
-<a id="d-add-function-handlers-to-execute-the-captured-events" class="anchor" href="#d-add-function-handlers-to-execute-the-captured-events" aria-hidden="true"><span class="octicon octicon-link"></span></a>d. Add function handlers to execute the captured events</h5>
+<a id="add-function-handlers-to-execute-the-captured-events" class="anchor" href="#add-function-handlers-to-execute-the-captured-events" aria-hidden="true"><span class="octicon octicon-link"></span></a>Add function handlers to execute the captured events</h5>
 
 <pre><code>        lamp.addFunctionHandler(new FunctionHandler() {
 
@@ -125,7 +125,7 @@
 </code></pre>
 
 <h5>
-<a id="e-add-on-ready-event-to-continue" class="anchor" href="#e-add-on-ready-event-to-continue" aria-hidden="true"><span class="octicon octicon-link"></span></a>e. Add on ready event to continue.</h5>
+<a id="add-on-ready-event-to-continue" class="anchor" href="#add-on-ready-event-to-continue" aria-hidden="true"><span class="octicon octicon-link"></span></a>Add on ready event to continue.</h5>
 
 <pre><code>lamp.onReady(new OnReady() {            
     public void ready() {
@@ -135,13 +135,13 @@
 </code></pre>
 
 <h5>
-<a id="f-connect-the-device-to-the-hatzouf-server" class="anchor" href="#f-connect-the-device-to-the-hatzouf-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>f. connect the device to the hatzouf server</h5>
+<a id="connect-the-device-to-the-hatzouf-server" class="anchor" href="#connect-the-device-to-the-hatzouf-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Connect the device to the hatzouf server</h5>
 
 <pre><code>  lamp.connect("ws://localhost:8080/hatzouf/websockets/iot");
 </code></pre>
 
 <h4>
-<a id="2--the-remote-control" class="anchor" href="#2--the-remote-control" aria-hidden="true"><span class="octicon octicon-link"></span></a>2.  The remote control.</h4>
+<a id="the-remote-control" class="anchor" href="#the-remote-control" aria-hidden="true"><span class="octicon octicon-link"></span></a>The remote control.</h4>
 
 <p>The remote control need to publish 2 events i.e OnSwitchOn and OnSwitchOff</p>
 
@@ -153,7 +153,7 @@
 </code></pre>
 
 <h5>
-<a id="propage-an-event-to-hatzouf-server" class="anchor" href="#propage-an-event-to-hatzouf-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Propage an event to hatzouf server</h5>
+<a id="propagate-an-event-to-hatzouf-server" class="anchor" href="#propagate-an-event-to-hatzouf-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Propagate an event to hatzouf server</h5>
 
 <pre><code>remotecontrol.propagateEvent("OnSwitchOn");
 
@@ -174,10 +174,9 @@
 
 <p>We need to create an iot application which will do the following</p>
 
-<ol>
-<li><p>Capture the OnSwitchOn event from the remote control and execute the SwitchOn function in the lamp.</p></li>
-<li><p>Capture the OnSwitchOff event.....</p></li>
-</ol>
+<p>Capture the OnSwitchOn event from the remote control and execute the SwitchOn function in the lamp.</p>
+
+<p>Capture the OnSwitchOff event.....</p>
 
 <p>Good news an IOTApplet is in fact a spring managed bean.</p>
 
@@ -223,10 +222,9 @@ device.addEvent(new OnSwitchOff(), "OnSwitchOff");
 
 <p>Simply create a spring application context file with the following convention</p>
 
-<ol>
-<li><p>The file name should be xxx-config.xml, where xxx could by anything</p></li>
-<li><p>The file should be in folder WEB-INF/configs in the iot directory.</p></li>
-</ol>
+<p>The file name should be xxx-config.xml, where xxx could by anything</p>
+
+<p>The file should be in folder WEB-INF/configs in the iot directory.</p>
 
 <pre><code>&lt;bean class="org.castafiore.iot.RemoteControlApplet"&gt;
    &lt;property name="registry" ref="deviceRegistry"&gt;&lt;/property&gt;
@@ -239,7 +237,7 @@ device.addEvent(new OnSwitchOff(), "OnSwitchOff");
 
 <p>The remote controlled switch is ready for use.</p>
 
-<p>start the 2 devices.</p>
+<p>Start the 2 devices.</p>
 
 <p>click on the switch on and switch off button and see if it reacts on the lamp device.</p>
       </section>
