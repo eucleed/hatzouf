@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Hatzouf : IOT Framework">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Hatzouf</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/eucleed/hatzouf">View on GitHub</a>
+
+          <h1 id="project_title">Hatzouf</h1>
+          <h2 id="project_tagline">IOT Framework</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/eucleed/hatzouf/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/eucleed/hatzouf/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="welcome-to-hatzouf-iot-framework" class="anchor" href="#welcome-to-hatzouf-iot-framework" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to hatzouf IOT framework</h3>
+
+<p>The hatzouf iot framework is the easiest way to provide interconnection with electronic devices.</p>
+
+<h3>
+<a id="get-started" class="anchor" href="#get-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get started</h3>
+
+<h4>
+<a id="install-the-server" class="anchor" href="#install-the-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install the server</h4>
+
+<p>At least JDK 1.7 is required.</p>
+
+<p>Download hatzouf server <a href="http://www.google.com">Hatzouf</a></p>
+
+<p>run 
+bin/startup.sh on linux 
+or
+bin/startup.bat on windows</p>
+
+<p>Check if server is running http://localhost:8080/iot</p>
+
+<h4>
+<a id="create-a-driver" class="anchor" href="#create-a-driver" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create a driver</h4>
+
+<pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;org.castafiore&lt;/groupId&gt;
+  &lt;artifactId&gt;iot.driver.java&lt;/artifactId&gt;
+  &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;
+
+</code></pre>
+
+<h3>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<p>In this example we will create a simple remote controlled Lamp.
+We need 2 devices: A lamp and a remote control with 2 buttons. On and Off</p>
+
+<p>The remote control publishes 2 types of event : OnSwitchOn and OnSwitchOff
+The lamp captures 2 events : SwitchOn and SwitchOff</p>
+
+<p>Now that we have made the design, let us build the system.</p>
+
+<h4>
+<a id="1---the-lamp" class="anchor" href="#1---the-lamp" aria-hidden="true"><span class="octicon octicon-link"></span></a>1.   The Lamp</h4>
+
+<p>Since we do not have a device embedded with linux yet, we will create a simple java swing interface to emulate the lamp.</p>
+
+<p>The lamp need to be able to receive 2 events. i.e. SwitchOn and SwitchOff</p>
+
+<pre><code>public static void main(String[] args) {
+        //1. Create an instance of device
+        final Device lamp = new Device("Lamp", "Lamp","Lamp" ,"lamp.png");
+
+        //2. Register the 2 functions
+        lamp.registerFunction("SwitchOn", "Function exposed to server");
+        lamp.registerFunction("SwitchOff", "Function exposed to server for switching off the device");
+
+        //3. Set the type of communication layer. In this case it is a java implementation of websocket.
+        //Depending the environment the driver is running, other implementation of the websocket layer can be injected
+        lamp.setWebsocketLayer(new JavaWebsocketLayer(lamp));
+
+        //a simple text label to display if lamp is on or off.
+        //in a real lamp, instead displaying a label, the microcontroller will send an electric signal to a switch
+        final JLabel state = new JLabel();
+
+        //4. Add function handlers to execute the captured events
+        //this implementation of the handler simply diplays Switched on or Switched off
+        lamp.addFunctionHandler(new FunctionHandler() {
+
+            @Override
+            public void execute(String name, Map&lt;String, String&gt; input) {
+                if(name.equals("SwitchOn")){
+                    System.out.println("Switched  on");
+                    state.setText("Switched on");
+                }else{
+                    System.out.println("Switched off");
+                    state.setText("Switched off");
+                }
+
+            }
+        });
+
+        //5. This handler is executed when the device is connected and ready for use.
+        lamp.onReady(new OnReady() {
+
+            @Override
+            public void ready() {
+                JFrame frame = new JFrame("My switch");
+                frame.getContentPane().add(state, BorderLayout.NORTH);
+                frame.setSize(200, 200);
+                frame.setVisible(true);
+
+            }
+        });
+
+        //6. connect the device to the hatzouf server
+        lamp.connect("ws://localhost:8080/iot/websockets/iot");
+
+    }
+</code></pre>
+
+<h4>
+<a id="2--the-remote-control" class="anchor" href="#2--the-remote-control" aria-hidden="true"><span class="octicon octicon-link"></span></a>2.  The remote control.</h4>
+
+<p>The remote control need to publish 2 events i.e OnSwitchOn and OnSwitchOff</p>
+
+<p>Here is the code for creating the remote control.</p>
+
+<pre><code>public static void main(String[] args) {
+
+        //create an instance of the device
+        final Device remotecontrol = new Device("SwitchRC", "SwitchRC", "Remote control", "remote.png");
+        //register the 2 events
+        remotecontrol.registerEvent("OnSwitchOn", "Switch on");
+        remotecontrol.registerEvent("OnSwitchOff", "Switch off");
+
+
+        remotecontrol.onReady(new OnReady() {
+
+            @Override
+            public void ready() {
+
+                String title = "Remote control";
+                JFrame frame = new JFrame(title);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                JButton switchon = new JButton("Switch on");
+                switchon.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        remotecontrol.propagateEvent("OnSwitchOn");
+                    }
+                });
+
+                JButton switchoff = new JButton("Switch off");
+                switchoff.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        remotecontrol.propagateEvent("OnSwitchOff");
+                    }
+                });
+
+                Container contentPane = frame.getContentPane();
+                contentPane.add(switchon, BorderLayout.NORTH);
+                contentPane.add(switchoff, BorderLayout.CENTER);
+
+                frame.setSize(300, 125);
+                frame.setVisible(true);
+
+            }
+        });
+        //set WebsocketLayer implementation
+        remotecontrol.setWebsocketLayer(new JavaWebsocketLayer(remotecontrol));
+        //connect to server
+        remotecontrol.connect("ws://localhost:8080/iot/websockets/iot");
+
+
+    }
+</code></pre>
+
+<h4>
+<a id="3-the-server" class="anchor" href="#3-the-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. The server</h4>
+
+<p>Up to now, we have created our devices and connected them to the server.
+To check if the devices are working properly:
+go to <a href="http://localhost:8080/iot">http://localhost:8080/iot</a>
+Click refresh.
+You should see the devices and their status.</p>
+
+<p>We need to create an iot application which will do the following
+1. Capture the OnSwitchOn event from the remote control and execute the SwichOn function in the lamp.</p>
+
+<ol>
+<li>Capture the OnSwitchOff event.....</li>
+</ol>
+
+<p>Good news an IOTApplet is in fact a spring managed bean.</p>
+
+<p>The code below is the implementation of the IOTApplet</p>
+
+<pre><code>public class RemoteControlApplet extends GenericIOTApplet {
+
+    public RemoteControlApplet(){
+        //add the required devices to be used
+        addRequiredDeviceName("Lamp");
+        addRequiredDeviceName("SwitchRC");
+
+    }
+
+    @Override
+    public void initDevice(Device device) {
+        //when device is first initialised, we add the listener for the 2 events on the remote control
+        if(device.getName().equals("SwitchRC")){
+            device.addEvent(new OnSwitchOn(), "OnSwitchOn");
+            device.addEvent(new OnSwitchOff(), "OnSwitchOff");
+        }
+
+    }
+
+
+    /**
+     * Implementation of the OnSwitchOn listener
+     *
+     */
+    class OnSwitchOn implements EventListener{
+
+        @Override
+        public void execute(Device source, String type,
+                Map&lt;String, String&gt; parameters) {
+            //finds the device and invoke the SwitchOn function
+            findDeviceByName("Lamp").invoke("SwitchOn");
+
+        }
+
+    }
+
+    class OnSwitchOff implements EventListener{
+
+        @Override
+        public void execute(Device source, String type, Map&lt;String, String&gt; parameters) {
+
+            //finds the Lamp device and invokes the SwitchOff event
+            findDeviceByName("Lamp").invoke("SwitchOff");
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+
+<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+
+<h3>
+<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+
+<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+
+<h3>
+<a id="rather-drive-stick" class="anchor" href="#rather-drive-stick" aria-hidden="true"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+
+<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+
+<h3>
+<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+
+<h3>
+<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Hatzouf maintained by <a href="https://github.com/eucleed">eucleed</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
